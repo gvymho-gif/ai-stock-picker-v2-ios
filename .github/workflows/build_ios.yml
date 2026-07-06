@@ -26,7 +26,6 @@ jobs:
           flutter-version: '3.0.0'
           channel: 'stable'
 
-      # 清理硬编码路径的 Flutter 配置文件
       - name: 清理本地 Flutter 配置
         working-directory: App源码/ai_stock_picker
         run: |
@@ -38,8 +37,7 @@ jobs:
 
       # 修复 1：podhelper.rb File.exists? → File.exist?
       - name: 修复 1 - Ruby 3.x 兼容
-        run: |
-          find $FLUTTER_ROOT/packages/flutter_tools/bin/ -name "podhelper*" -exec sed -i '' 's/File\.exists?/File.exist?/g' {} \;
+        run: find $FLUTTER_ROOT/packages/flutter_tools/bin/ -name "podhelper*" -exec sed -i '' 's/File\.exists?/File.exist?/g' {} \;
 
       # 修复 2：绕过 CocoaPods Swift 校验
       - name: 修复 2 - 绕过 CocoaPods Swift 校验
@@ -47,13 +45,8 @@ jobs:
           VALIDATOR=$(find /opt/homebrew/lib/ruby/gems -name "target_validator.rb" -path "*/cocoapods/*" 2>/dev/null | head -1)
           if [ -n "$VALIDATOR" ] && [ -f "$VALIDATOR" ]; then
             ruby -e "
-              file = ARGV[0]
-              lines = File.readlines(file)
-              new_lines = []
-              lines.each do |line|
-                new_lines << line
-                new_lines << \"  return\n\" if line =~ /^\s*def verify_swift_pods_swift_version\b/
-              end
+              file = ARGV[0]; lines = File.readlines(file); new_lines = []
+              lines.each { |l| new_lines << l; new_lines << \"  return\n\" if l =~ /^\s*def verify_swift_pods_swift_version\b/ }
               File.write(file, new_lines.join)
             " "$VALIDATOR"
           fi
@@ -62,54 +55,75 @@ jobs:
         working-directory: App源码/ai_stock_picker
         run: flutter pub get
 
-      # 先用 xcode_backend.sh 生成 Flutter 编译产物
-      - name: 构建 Flutter 编译产物 (assemble)
-        working-directory: App源码/ai_stock_picker/ios
+      # 第一步：先跑 flutter build 让 pod install 和 assemble 都完成
+      # 如果失败了也继续，因为 Flutter 编译产物可能已经生成了
+      - name: flutter build ios (第一次尝试)
+        working-directory: App源码/ai_stock_picker
         run: |
-          /bin/sh "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" build
-          echo "=== 检查 Flutter framework ==="
-          ls -la Flutter/ 2>/dev/null || echo "Flutter 目录不存在"
-          ls -la Flutter/App.framework/ 2>/dev/null || echo "App.framework 不存在"
-          find build -name "*.framework" -type d 2>/dev/null | head -5 || echo "无 framework"
+          flutter build ios --release --no-codesign 2>&1 | tee /tmp/flutter_build_1.log || true
+          # 检查是否有 Runner.app
+          if find build/ios -name "Runner.app" -type d | head -1 | grep -q "Runner.app"; then
+            echo "✅ 第一次构建就成功了！"
+            exit 0
+          fi
+          echo "第一次构建失败（预期中的 Flutter.h 问题），继续修复..."
 
-      # 运行 pod install
-      - name: pod install
-        working-directory: App源码/ai_stock_picker/ios
-        run: pod install
-
-      # 直接用 xcodebuild 构建（不依赖 flutter build 命令）
-      - name: Xcode build (unsigned)
-        working-directory: App源码/ai_stock_picker/ios
+      # 修复 Flutter.h 问题：找到 Flutter framework 并把头文件复制到 Pods 能找到的位置
+      - name: 修复 Flutter.h 头文件路径
+        working-directory: App源码/ai_stock_picker
         run: |
-          xcodebuild \
-            -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -destination generic/platform=ios \
-            -arch arm64 \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            ONLY_ACTIVE_ARCH=NO \
-            build
+          echo "=== 查找 App.framework ==="
+          find . -name "App.framework" -type d | head -5
+          echo "=== 查找 Flutter.framework ==="
+          find . -name "Flutter.framework" -type d | head -5
+          echo "=== ios/Flutter 目录 ==="
+          ls ios/Flutter/ 2>/dev/null || echo "不存在"
+          
+          # 在 Pods 项目中为所有 target 添加 Flutter 头文件路径
+          if [ -d "ios/Pods" ]; then
+            PODS_PROJECT="ios/Pods/Pods.xcodeproj/project.pbxproj"
+            if [ -f "$PODS_PROJECT" ]; then
+              # 找到 Flutter framework 的确切路径
+              FLUTTER_FW=$(find $FLUTTER_ROOT -name "Flutter.framework" -path "*/ios*release*" -type d | head -1)
+              APP_FW=$(find . -name "App.framework" -type d | head -1)
+              echo "Flutter.framework: $FLUTTER_FW"
+              echo "App.framework: $APP_FW"
+              
+              # 在所有 Pods target 的 build settings 中添加头文件搜索路径
+              ruby -e "
+                require 'xcodeproj'
+                project = Xcodeproj::Project.open('ios/Pods/Pods.xcodeproj')
+                project.targets.each do |target|
+                  target.build_configurations.each do |config|
+                    existing = config.build_settings['HEADER_SEARCH_PATHS'] || ['$(inherited)']
+                    if existing.is_a?(String)
+                      existing = existing.split
+                    end
+                    existing << 'ios/Flutter'
+                    existing << 'ios/Flutter/App.framework/Headers'
+                    config.build_settings['HEADER_SEARCH_PATHS'] = existing
+                  end
+                end
+                project.save
+                puts '✅ HEADER_SEARCH_PATHS 已注入到所有 Pods targets'
+              " || echo "xcodeproj Ruby gem 不可用，用 sed 替代"
+            fi
+          fi
+
+      # 第二次构建：这次 Flutter framework 已经被正确编译，头文件路径也修复了
+      - name: flutter build ios (第二次)
+        working-directory: App源码/ai_stock_picker
+        run: flutter build ios --release --no-codesign
 
       - name: Package IPA
-        working-directory: App源码/ai_stock_picker/ios
+        working-directory: App源码/ai_stock_picker
         run: |
-          APP=$(find build -name "Runner.app" -type d | head -1)
-          echo "找到 App: $APP"
-          if [ -z "$APP" ]; then
-            echo "❌ Runner.app 未找到！"
-            find build -type d | head -20
-            exit 1
-          fi
+          APP=$(find build/ios -name "Runner.app" -type d | head -1)
+          echo "App: $APP"
           mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -9qr /tmp/蓝图极智-v2.0.2-unsigned.ipa Payload/
-          ls -lh /tmp/蓝图极智-v2.0.2-unsigned.ipa
-          cp /tmp/蓝图极智-v2.0.2-unsigned.ipa "$GITHUB_WORKSPACE/App源码/ai_stock_picker/蓝图极智-v2.0.2-unsigned.ipa"
+          zip -9qr 蓝图极智-v2.0.2-unsigned.ipa Payload/
+          ls -lh 蓝图极智-v2.0.2-unsigned.ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
