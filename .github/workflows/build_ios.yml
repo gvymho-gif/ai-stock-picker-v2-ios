@@ -147,23 +147,26 @@ jobs:
           flutter build ios --release --no-codesign || true
 
       - name: Package IPA
-        working-directory: App源码/ai_stock_picker
+        working-directory: App源码/ai_stock_picker/ios
         if: always()
         run: |
-          APP=$(find build/ios -name "Runner.app" -type d 2>/dev/null | head -1)
+          # xcodebuild 默认输出到 ios/build/Build/Products/Release-iphoneos/
+          # flutter build 输出到 build/ios/iphoneos/
+          APP=$(find build -name "Runner.app" -type d 2>/dev/null | head -1)
           if [ -z "$APP" ]; then
-            APP=$(find ios/build -name "Runner.app" -type d 2>/dev/null | head -1)
+            APP=$(find ../build/ios -name "Runner.app" -type d 2>/dev/null | head -1)
           fi
           echo "App: $APP"
           if [ -z "$APP" ]; then
             echo "❌ Runner.app 未找到"
             find . -name "*.app" -type d 2>/dev/null | head -10
+            find ../build -name "*.app" -type d 2>/dev/null | head -10
             exit 1
           fi
           mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -9qr 蓝图极智-v2.0.2-unsigned.ipa Payload/
-          ls -lh 蓝图极智-v2.0.2-unsigned.ipa
+          zip -9qr ../蓝图极智-v2.0.2-unsigned.ipa Payload/
+          ls -lh ../蓝图极智-v2.0.2-unsigned.ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
