@@ -58,12 +58,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
-		<string>processing</string>
-	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>com.aistockpicker.expertPerformance</string>
-		<string>com.aistockpicker.backgroundFetch</string>
 	</array>
 </dict>
 </plist>
