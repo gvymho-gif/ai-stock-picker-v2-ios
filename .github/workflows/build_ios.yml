@@ -15,19 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Ruby 2.7 (CocoaPods 兼容)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '2.7'
-          bundler-cache: false
-
-      - name: Install CocoaPods 1.11.3
-        run: gem install cocoapods -v 1.11.3
-
-      - name: Setup Flutter 3.0.0
+      - name: Setup Flutter 3.7.12 (兼容 Dart 2.x)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.0.0'
+          flutter-version: '3.7.12'
           channel: 'stable'
 
       - name: Setup Xcode
