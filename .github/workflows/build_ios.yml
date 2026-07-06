@@ -26,32 +26,35 @@ jobs:
           flutter-version: '3.0.0'
           channel: 'stable'
 
-      # macOS 14 自带的 CocoaPods 1.16.2 对 Swift 版本校验过于严格，
-      # workmanager-library pod 不声明 Swift 版本会导致验证失败。
-      # 降级到 1.15.2 绕过此校验。
-      - name: Downgrade CocoaPods to 1.15.2
-        run: |
-          brew uninstall --ignore-dependencies cocoapods 2>/dev/null || true
-          sudo gem uninstall cocoapods -a 2>/dev/null || true
-          sudo gem install cocoapods -v 1.14.3
-          pod --version
-
-      # 关键修复：Flutter 3.0.0 的 podhelper.rb 用了 File.exists?，
-      # 在 macOS 14 的 Ruby 3.3 里已被移除，必须替换为 File.exist?
+      # Flutter 3.0.0 的 podhelper.rb 用了已废弃的 File.exists?
       - name: Patch Flutter SDK - Ruby 3.x 兼容
         run: |
-          echo "=== 修复前 ==="
-          grep -n 'File\.exists?' $FLUTTER_ROOT/packages/flutter_tools/bin/podhelper.rb || echo "(未找到 File.exists?，可能已修复)"
-          echo ""
-          echo "=== 执行修复 ==="
           find $FLUTTER_ROOT/packages/flutter_tools/bin/ -name "podhelper*" -exec sed -i '' 's/File\.exists?/File.exist?/g' {} \;
-          echo ""
-          echo "=== 验证修复 ==="
-          grep -n 'File\.exists?' $FLUTTER_ROOT/packages/flutter_tools/bin/podhelper.rb && echo "⚠️ 仍有 File.exists? 残留!" || echo "✅ 已全部替换为 File.exist?"
+          echo "✅ podhelper.rb 已修复"
 
       - name: Install dependencies
         working-directory: App源码/ai_stock_picker
         run: flutter pub get
+
+      # workmanager pod 的 podspec 没声明 Swift 版本，
+      # 而新版 CocoaPods 强制校验此字段。直接往 podspec 里注入。
+      - name: Patch workmanager podspec - 注入 Swift 版本
+        working-directory: App源码/ai_stock_picker
+        run: |
+          PODSPEC="ios/.symlinks/plugins/workmanager/ios/workmanager.podspec"
+          if [ -f "$PODSPEC" ]; then
+            if ! grep -q "swift_version\|swift_versions" "$PODSPEC"; then
+              # 在 s.source 行后插入 Swift 版本声明
+              sed -i '' '/s\.source[[:space:]]*=/a\'$'\n''  s.swift_versions = "5.0"' "$PODSPEC"
+              echo "✅ 已注入 swift_versions = '5.0'"
+            else
+              echo "✅ swift_versions 已存在"
+            fi
+            grep -n "swift" "$PODSPEC"
+          else
+            echo "⚠️ workmanager podspec 未找到"
+            find ios/.symlinks -name "*.podspec" 2>/dev/null | head -20
+          fi
 
       - name: Build iOS (unsigned)
         working-directory: App源码/ai_stock_picker
@@ -61,7 +64,7 @@ jobs:
         working-directory: App源码/ai_stock_picker
         run: |
           APP=$(find build/ios -name "Runner.app" -type d | head -1)
-          echo "找到 App: $APP"
+          echo "App: $APP"
           mkdir -p Payload
           cp -R "$APP" Payload/
           zip -9qr 蓝图极智-v2.0.2-unsigned.ipa Payload/
