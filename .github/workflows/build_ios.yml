@@ -9,7 +9,7 @@ jobs:
   build-ios:
     name: Build iOS (unsigned IPA)
     runs-on: macos-14
-    timeout-minutes: 45
+    timeout-minutes: 60
     
     steps:
       - name: Checkout
@@ -26,25 +26,22 @@ jobs:
           flutter-version: '3.0.0'
           channel: 'stable'
 
-      # 清理本地生成的 Flutter 配置文件（包含硬编码路径）
+      # 清理硬编码路径的 Flutter 配置文件
       - name: 清理本地 Flutter 配置
         working-directory: App源码/ai_stock_picker
         run: |
           rm -f ios/Flutter/Generated.xcconfig
           rm -f ios/Flutter/flutter_export_environment.sh
-          rm -f .flutter-plugins
-          rm -f .flutter-plugins-dependencies
+          rm -f .flutter-plugins .flutter-plugins-dependencies
           rm -f ios/Podfile.lock
           rm -rf ios/Pods 2>/dev/null || true
-          echo "✅ 已清理本地配置"
 
-      # 修复 1：Flutter 3.0 的 podhelper.rb 用了已废弃的 File.exists?
-      - name: 修复 1 - Flutter SDK Ruby 3.x 兼容
+      # 修复 1：podhelper.rb File.exists? → File.exist?
+      - name: 修复 1 - Ruby 3.x 兼容
         run: |
           find $FLUTTER_ROOT/packages/flutter_tools/bin/ -name "podhelper*" -exec sed -i '' 's/File\.exists?/File.exist?/g' {} \;
-          echo "✅ podhelper.rb 已修复"
 
-      # 修复 2：绕过 CocoaPods 的 Swift 版本校验
+      # 修复 2：绕过 CocoaPods Swift 校验
       - name: 修复 2 - 绕过 CocoaPods Swift 校验
         run: |
           VALIDATOR=$(find /opt/homebrew/lib/ruby/gems -name "target_validator.rb" -path "*/cocoapods/*" 2>/dev/null | head -1)
@@ -59,37 +56,60 @@ jobs:
               end
               File.write(file, new_lines.join)
             " "$VALIDATOR"
-            echo "✅ Swift 校验已绕过"
-          else
-            echo "⚠️ target_validator.rb 未找到"
           fi
 
-      - name: Install dependencies
+      - name: flutter pub get
         working-directory: App源码/ai_stock_picker
         run: flutter pub get
 
-      - name: Pre-build Flutter framework
-        working-directory: App源码/ai_stock_picker
+      # 先用 xcode_backend.sh 生成 Flutter 编译产物
+      - name: 构建 Flutter 编译产物 (assemble)
+        working-directory: App源码/ai_stock_picker/ios
         run: |
-          # 先跑一次 flutter build ios --config-only 确保 Generated.xcconfig 等文件被正确生成
-          # 然后 xcode_backend.sh 会把 Flutter framework 复制到正确位置
-          flutter build ios --release --no-codesign --config-only || true
-          # 检查 Generated.xcconfig 是否被重新生成
-          cat ios/Flutter/Generated.xcconfig | head -5
+          /bin/sh "$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh" build
+          echo "=== 检查 Flutter framework ==="
+          ls -la Flutter/ 2>/dev/null || echo "Flutter 目录不存在"
+          ls -la Flutter/App.framework/ 2>/dev/null || echo "App.framework 不存在"
+          find build -name "*.framework" -type d 2>/dev/null | head -5 || echo "无 framework"
 
-      - name: Build iOS (unsigned)
-        working-directory: App源码/ai_stock_picker
-        run: flutter build ios --release --no-codesign
+      # 运行 pod install
+      - name: pod install
+        working-directory: App源码/ai_stock_picker/ios
+        run: pod install
+
+      # 直接用 xcodebuild 构建（不依赖 flutter build 命令）
+      - name: Xcode build (unsigned)
+        working-directory: App源码/ai_stock_picker/ios
+        run: |
+          xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination generic/platform=ios \
+            -arch arm64 \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ONLY_ACTIVE_ARCH=NO \
+            build
 
       - name: Package IPA
-        working-directory: App源码/ai_stock_picker
+        working-directory: App源码/ai_stock_picker/ios
         run: |
-          APP=$(find build/ios -name "Runner.app" -type d | head -1)
-          echo "App: $APP"
+          APP=$(find build -name "Runner.app" -type d | head -1)
+          echo "找到 App: $APP"
+          if [ -z "$APP" ]; then
+            echo "❌ Runner.app 未找到！"
+            find build -type d | head -20
+            exit 1
+          fi
           mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -9qr 蓝图极智-v2.0.2-unsigned.ipa Payload/
-          ls -lh 蓝图极智-v2.0.2-unsigned.ipa
+          zip -9qr /tmp/蓝图极智-v2.0.2-unsigned.ipa Payload/
+          ls -lh /tmp/蓝图极智-v2.0.2-unsigned.ipa
+          cp /tmp/蓝图极智-v2.0.2-unsigned.ipa "$GITHUB_WORKSPACE/App源码/ai_stock_picker/蓝图极智-v2.0.2-unsigned.ipa"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
