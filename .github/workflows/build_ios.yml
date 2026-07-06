@@ -8,23 +8,23 @@ on:
 jobs:
   build-ios:
     name: Build iOS
-    runs-on: macos-14
+    runs-on: macos-13
     timeout-minutes: 60
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flutter 3.7.12 (兼容 Dart 2.x)
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.7.12'
-          channel: 'stable'
-
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.2'
+          xcode-version: '14.3.1'
+
+      - name: Setup Flutter 3.0.0
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+          channel: 'stable'
 
       - name: Install dependencies
         working-directory: App源码/ai_stock_picker
@@ -35,21 +35,15 @@ jobs:
       - name: Build iOS
         working-directory: App源码/ai_stock_picker
         run: |
-          export LANG=en_US.UTF-8
           flutter build ios --release --no-codesign
 
       - name: Create IPA
         working-directory: App源码/ai_stock_picker
         run: |
           RUNNER_APP=$(find build/ios -name "Runner.app" -type d | head -1)
-          if [ -z "$RUNNER_APP" ]; then
-            echo "Runner.app not found"
-            exit 1
-          fi
           mkdir -p Payload
           cp -R "$RUNNER_APP" Payload/
           zip -qr 蓝图极智-v2.0.2.ipa Payload/
-          rm -rf Payload
           ls -lh 蓝图极智-v2.0.2.ipa
 
       - name: Upload IPA
