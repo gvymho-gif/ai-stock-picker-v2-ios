@@ -15,9 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fix CocoaPods Ruby 3.x compatibility
-        run: sudo gem install ffi -v 1.17.4
-
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -29,11 +26,22 @@ jobs:
           flutter-version: '3.0.0'
           channel: 'stable'
 
+      # 关键修复：Flutter 3.0.0 的 podhelper.rb 用了 File.exists?，
+      # 在 macOS 14 的 Ruby 3.3 里已被移除，必须替换为 File.exist?
+      - name: Patch Flutter SDK - Ruby 3.x 兼容
+        run: |
+          echo "=== 修复前 ==="
+          grep -n 'File\.exists?' $FLUTTER_ROOT/packages/flutter_tools/bin/podhelper.rb || echo "(未找到 File.exists?，可能已修复)"
+          echo ""
+          echo "=== 执行修复 ==="
+          find $FLUTTER_ROOT/packages/flutter_tools/bin/ -name "podhelper*" -exec sed -i '' 's/File\.exists?/File.exist?/g' {} \;
+          echo ""
+          echo "=== 验证修复 ==="
+          grep -n 'File\.exists?' $FLUTTER_ROOT/packages/flutter_tools/bin/podhelper.rb && echo "⚠️ 仍有 File.exists? 残留!" || echo "✅ 已全部替换为 File.exist?"
+
       - name: Install dependencies
         working-directory: App源码/ai_stock_picker
-        run: |
-          flutter pub get
-          pod repo update 2>/dev/null || true
+        run: flutter pub get
 
       - name: Build iOS (unsigned)
         working-directory: App源码/ai_stock_picker
@@ -43,6 +51,7 @@ jobs:
         working-directory: App源码/ai_stock_picker
         run: |
           APP=$(find build/ios -name "Runner.app" -type d | head -1)
+          echo "找到 App: $APP"
           mkdir -p Payload
           cp -R "$APP" Payload/
           zip -9qr 蓝图极智-v2.0.2-unsigned.ipa Payload/
