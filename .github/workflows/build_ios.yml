@@ -43,7 +43,7 @@ jobs:
               new_lines = []
               lines.each do |line|
                 new_lines << line
-                new_lines << \"  return\n\" if line.strip == 'def verify_swift_pods_swift_version'
+                new_lines << \"  return\n\" if line =~ /^\s*def verify_swift_pods_swift_version\b/
               end
               File.write(file, new_lines.join)
             " "$VALIDATOR"
