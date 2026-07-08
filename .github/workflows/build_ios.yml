@@ -13,25 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Xcode 14.3.1
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '14.3.1'
-
-      - name: Xcode version
-        run: xcodebuild -version
-
-      - name: Setup Flutter 3.0.0
+      - name: Setup Flutter (latest stable)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.0.0'
           channel: 'stable'
+
+      - name: Flutter version
+        run: flutter --version
 
       - name: Install dependencies
         working-directory: App源码/ai_stock_picker
-        run: |
-          flutter clean
-          flutter pub get
+        run: flutter pub get
 
       - name: Build iOS
         working-directory: App源码/ai_stock_picker
