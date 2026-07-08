@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Flutter 3.0.0
         uses: subosito/flutter-action@v2
@@ -20,15 +20,18 @@ jobs:
           channel: 'stable'
 
       - name: Install dependencies
+        working-directory: App源码/ai_stock_picker
         run: |
           flutter clean
           flutter pub get
 
       - name: Build iOS Release (no codesign)
+        working-directory: App源码/ai_stock_picker
         run: flutter build ios --release --no-codesign
 
       - name: Locate Runner.app
         id: find_app
+        working-directory: App源码/ai_stock_picker
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           if [ -z "$RUNNER" ]; then
@@ -40,6 +43,7 @@ jobs:
           echo "✅ Runner.app: $RUNNER"
 
       - name: Package IPA
+        working-directory: App源码/ai_stock_picker
         run: |
           mkdir -p build/ios/ipa/Payload
           cp -R "${{ steps.find_app.outputs.runner_path }}" build/ios/ipa/Payload/
@@ -48,7 +52,7 @@ jobs:
           echo "✅ IPA: build/ios/蓝图极智-v2.0.2.ipa"
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: 蓝图极智-v2.0.2
-          path: build/ios/蓝图极智-v2.0.2.ipa
+          path: App源码/ai_stock_picker/build/ios/蓝图极智-v2.0.2.ipa
