@@ -1,5 +1,6 @@
-# Codemagic 云构建配置 - 免费，无需 Mac！
-# 使用步骤见 README.md 中的 "方案一"
+# Codemagic 云构建配置 v3 - 绕过 flutter build ios，直接用 xcodebuild
+# 核心策略：flutter build ios 的 --no-codesign 在 Flutter stable + Xcode 16 上不生效，
+#          改为手动执行 pod install → xcodebuild → 打包 IPA 三步走
 workflows:
   ios-build:
     name: 蓝图极智 iOS Build
@@ -9,44 +10,92 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Clean and install dependencies
+      - name: Clean and install Dart dependencies
         script: |
           cd App源码/ai_stock_picker
-          # 完全清理，确保没有旧的 Pods 缓存
           flutter clean
-          rm -rf ios/Pods ios/Podfile.lock
+          rm -rf ios/Pods ios/Podfile.lock ios/build ios/.symlinks
           flutter pub get
-      - name: Build iOS
-        script: |
-          cd App源码/ai_stock_picker
-          # 🔑 关键：导出环境变量禁用代码签名
-          export CODE_SIGNING_ALLOWED=NO
-          export CODE_SIGNING_REQUIRED=NO
-          export CODE_SIGN_IDENTITY=""
-          export AD_HOC_CODE_SIGNING_ALLOWED=NO
 
-          # 输出调试信息
-          echo "=== Code Signing Settings ==="
-          echo "CODE_SIGNING_ALLOWED=$CODE_SIGNING_ALLOWED"
-          echo "CODE_SIGNING_REQUIRED=$CODE_SIGNING_REQUIRED"
-          echo "Flutter version: $(flutter --version | head -1)"
-
-          # 构建
-          flutter build ios --release --no-codesign
-      - name: Create IPA
+      - name: Install CocoaPods dependencies
         script: |
-          cd App源码/ai_stock_picker
-          echo "=== Looking for Runner.app ==="
-          find build/ios -name "Runner.app" -type d
-          RUNNER_APP=$(find build/ios -name "Runner.app" -type d | head -1)
-          if [ -z "$RUNNER_APP" ]; then
-            echo "ERROR: Runner.app not found!"
+          cd App源码/ai_stock_picker/ios
+          pod install --repo-update
+
+      - name: Build with xcodebuild (bypassing flutter build)
+        script: |
+          cd App源码/ai_stock_picker/ios
+
+          echo "=========================================="
+          echo "  Starting xcodebuild (manual, no-sign)"
+          echo "=========================================="
+
+          xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination generic/platform=iOS \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=NO \
+            CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING=NO \
+            ENABLE_BITCODE=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            | tee ../build.log
+
+          # 检查构建结果
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo ""
+            echo "=== BUILD FAILED ==="
+            tail -100 ../build.log
             exit 1
           fi
-          echo "Found app at: $RUNNER_APP"
+
+          echo ""
+          echo "=== BUILD SUCCEEDED ==="
+
+      - name: Create IPA package
+        script: |
+          cd App源码/ai_stock_picker
+
+          echo "=== Locating Runner.app ==="
+          # xcodebuild 输出到 build/Release-iphoneos/
+          RUNNER_APP=$(find build -name "Runner.app" -type d | head -1)
+          echo "Found: $RUNNER_APP"
+
+          if [ -z "$RUNNER_APP" ]; then
+            # 尝试其他可能的路径
+            RUNNER_APP=$(find ios/build -name "Runner.app" -type d 2>/dev/null | head -1)
+            echo "Alt path: $RUNNER_APP"
+          fi
+
+          if [ -z "$RUNNER_APP" ]; then
+            echo "ERROR: Runner.app not found anywhere!"
+            find . -name "Runner.app" -type d 2>/dev/null
+            exit 1
+          fi
+
+          # 验证 app 存在
+          if [ ! -d "$RUNNER_APP" ]; then
+            echo "ERROR: $RUNNER_APP is not a valid directory!"
+            exit 1
+          fi
+
+          # 打包成 IPA（标准 iOS 应用归档格式）
+          rm -rf Payload
           mkdir -p Payload
           cp -R "$RUNNER_APP" Payload/
-          zip -qr 蓝图极智-v2.0.2.ipa Payload/
-          echo "IPA created successfully!"
+
+          IPA_NAME="蓝图极智-v2.0.2.ipa"
+          rm -f "$IPA_NAME"
+          zip -qr "$IPA_NAME" Payload/
+
+          ls -lh "$IPA_NAME"
+          echo "IPA created: $(pwd)/$IPA_NAME"
+
     artifacts:
       - App源码/ai_stock_picker/蓝图极智-v2.0.2.ipa
