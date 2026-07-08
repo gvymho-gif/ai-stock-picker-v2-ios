@@ -1,3 +1,6 @@
+# iOS Podfile - 修复 Xcode 15+/16 Flutter 构建兼容性
+# 核心问题：Xcode 15+ 的 Clang 模块依赖扫描无法解析 Flutter.framework
+
 platform :ios, '13.0'
 
 unless File.respond_to?(:exists?)
@@ -17,7 +20,7 @@ project 'Runner', {
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist..."
+    raise "#{generated_xcode_build_settings_path} must exist. Run flutter build ios first."
   end
   File.foreach(generated_xcode_build_settings_path) do |line|
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
@@ -28,43 +31,60 @@ end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
-flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-
+# 关键修复：禁用 Swift 版本验证（pre_install 阶段）
 pre_install do |installer|
+  # 禁用 CocoaPods 的 Swift 版本检查（workmanager 等插件未指定版本）
   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_swift_pods_swift_version) {}
 end
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks! :linkage => :static
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
   project_dir = File.dirname(File.realpath(__FILE__))
   flutter_dir = File.join(project_dir, 'Flutter')
-  
-  # 创建 Flutter.modulemap 让 Xcode 15+ 能找到 Flutter 模块
-  modulemap_dir = File.join(project_dir, 'Pods', 'Flutter')
-  FileUtils.mkdir_p(modulemap_dir)
-  File.write(File.join(modulemap_dir, 'module.modulemap'), <<-MODULE)
-framework module Flutter {
-  umbrella header "Flutter.h"
-  export *
-  module * { export * }
-}
-MODULE
-  
-  # 复制或链接 Flutter.h
-  header_src = File.join(flutter_dir, 'Flutter.framework', 'Headers', 'Flutter.h')
-  if File.exist?(header_src)
-    FileUtils.cp(header_src, File.join(modulemap_dir, 'Flutter.h')) rescue nil
-  end
-  
+  flutter_engine_dir = File.join(flutter_dir, 'Flutter.framework')
+
+  # ===== 核心修复：为所有 Pods target 配置正确的 Flutter 头文件路径 =====
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
     target.build_configurations.each do |config|
       config.build_settings['SWIFT_VERSION'] = '5.0'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+
+      # 🔑 关键：禁用模块依赖扫描（解决 Xcode 15+ 无法解析 Flutter 模块的问题）
+      config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
+      config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+      config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'NO'
+
+      # 设置头文件搜索路径（让 #import <Flutter/Flutter.h> 能找到）
+      framework_headers = File.join(flutter_engine_dir, 'Headers')
+      if File.directory?(framework_headers)
+        existing = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
+        config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing} \"#{framework_headers}\""
+      end
+
+      # 设置框架搜索路径
+      if File.directory?(flutter_engine_dir)
+        existing_fp = config.build_settings['FRAMEWORK_SEARCH_PATHS'] || '$(inherited)'
+        config.build_settings['FRAMEWORK_SEARCH_PATHS'] = "#{existing_fp} \"#{File.dirname(flutter_engine_dir)}\""
+      end
+    end
+  end
+
+  # ===== 为 Runner target 也设置相同配置 =====
+  runner_target = installer.pods_project.targets.detect { |t| t.name == 'Runner' }
+  if runner_target
+    runner_target.build_configurations.each do |config|
+      config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
+      framework_headers = File.join(flutter_engine_dir, 'Headers')
+      if File.directory?(framework_headers)
+        existing = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
+        config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing} \"#{framework_headers}\""
+      end
     end
   end
 end
