@@ -46,10 +46,16 @@ target 'Runner' do
 end
 
 post_install do |installer|
-  # 为所有 Pod 目标添加 Flutter framework 搜索路径
+  # arm64 macOS runner 兼容：Flutter.framework 找不到的问题
   flutter_dir = File.join(File.dirname(File.realpath(__FILE__)), 'Flutter')
-  # arm64 macOS runner 上的 Flutter engine 路径
-  flutter_engine_dir = File.join(flutter_root, 'bin', 'cache', 'artifacts', 'engine', 'ios')
+  pods_dir = File.join(File.dirname(File.realpath(__FILE__)), 'Pods')
+  
+  # 创建 Flutter.framework 软链接到 Pods 目录
+  flutter_framework_src = File.join(flutter_dir, 'Flutter.framework')
+  flutter_framework_dst = File.join(pods_dir, 'Flutter.framework')
+  unless File.exist?(flutter_framework_dst)
+    FileUtils.ln_sf(flutter_framework_src, flutter_framework_dst) rescue nil
+  end
   
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
@@ -57,21 +63,22 @@ post_install do |installer|
       config.build_settings['SWIFT_VERSION'] = '5.0'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       
-      # FRAMEWORK_SEARCH_PATHS：让所有 Pod 都能找到 Flutter.framework
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] += [
-        flutter_dir,
-        flutter_engine_dir,
-        '${PODS_ROOT}/../Flutter',
-        '${PODS_CONFIGURATION_BUILD_DIR}/Flutter'
-      ]
+      # FRAMEWORK_SEARCH_PATHS
+      fsp = config.build_settings['FRAMEWORK_SEARCH_PATHS']
+      fsp = fsp.is_a?(Array) ? fsp : ['$(inherited)']
+      fsp += [flutter_dir, pods_dir, '${PODS_ROOT}', '${PODS_ROOT}/../Flutter']
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = fsp.uniq
       
       # HEADER_SEARCH_PATHS
-      config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
-      config.build_settings['HEADER_SEARCH_PATHS'] += [
-        "#{flutter_dir}/Flutter.framework/Headers",
-        "#{flutter_engine_dir}/Flutter.framework/Headers"
-      ]
+      hsp = config.build_settings['HEADER_SEARCH_PATHS']
+      hsp = hsp.is_a?(Array) ? hsp : ['$(inherited)']
+      hsp += ["#{flutter_dir}/Flutter.framework/Headers", '${PODS_ROOT}/../Flutter/Flutter.framework/Headers']
+      config.build_settings['HEADER_SEARCH_PATHS'] = hsp.uniq
+      
+      # 关闭 Clang 依赖扫描加速（兼容新版 Xcode）
+      config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
+      # 让 Xcode 不要只编译活跃架构
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
     end
   end
 end
