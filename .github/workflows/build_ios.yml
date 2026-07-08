@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_ios:
-    runs-on: macos-14
+    runs-on: macos-13
 
     steps:
       - name: Checkout
@@ -35,7 +35,7 @@ jobs:
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           if [ -z "$RUNNER" ]; then
-            echo "Release 失败，尝试 Debug 模式..."
+            echo "Release failed, trying Debug..."
             flutter build ios --debug --no-codesign
             RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           fi
