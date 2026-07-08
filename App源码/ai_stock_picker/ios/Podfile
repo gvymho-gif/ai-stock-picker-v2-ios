@@ -44,8 +44,6 @@ end
 
 post_install do |installer|
   project_dir = File.dirname(File.realpath(__FILE__))
-  flutter_dir = File.join(project_dir, 'Flutter')
-  flutter_engine_dir = File.join(flutter_dir, 'Flutter.framework')
 
   # ===== 核心修复：为所有 Pods target 配置正确的 Flutter 头文件路径 =====
   installer.pods_project.targets.each do |target|
@@ -55,44 +53,20 @@ post_install do |installer|
       config.build_settings['SWIFT_VERSION'] = '5.0'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
 
-      # 🔑 关键：禁用模块依赖扫描（解决 Xcode 15+ 无法解析 Flutter 模块的问题）
+      # 🔑 关键1：禁用模块依赖扫描（解决 Xcode 15+ 无法解析 Flutter 模块的问题）
       config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
       config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
       config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'NO'
 
-      # 🔑 关键：禁用代码签名（no-codesign 构建）
+      # 🔑 关键2：禁用代码签名（no-codesign 构建）
       config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
       config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
       config.build_settings['CODE_SIGN_IDENTITY'] = ''
 
-      # 设置头文件搜索路径（让 #import <Flutter/Flutter.h> 能找到）
-      framework_headers = File.join(flutter_engine_dir, 'Headers')
-      if File.directory?(framework_headers)
-        existing = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
-        config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing} \"#{framework_headers}\""
-      end
-
-      # 设置框架搜索路径
-      if File.directory?(flutter_engine_dir)
-        existing_fp = config.build_settings['FRAMEWORK_SEARCH_PATHS'] || '$(inherited)'
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] = "#{existing_fp} \"#{File.dirname(flutter_engine_dir)}\""
-      end
-    end
-  end
-
-  # ===== 为 Runner target 也设置相同配置 =====
-  runner_target = installer.pods_project.targets.detect { |t| t.name == 'Runner' }
-  if runner_target
-    runner_target.build_configurations.each do |config|
-      config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
-      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
-      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-      config.build_settings['CODE_SIGN_IDENTITY'] = ''
-      framework_headers = File.join(flutter_engine_dir, 'Headers')
-      if File.directory?(framework_headers)
-        existing = config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
-        config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing} \"#{framework_headers}\""
-      end
+      # 🔑 关键3：直接设置头文件搜索路径（不使用 File.directory? 检查，因为在 Codemagic
+      #    上 pod install 执行时 Flutter.framework 可能还未就绪，但 Xcode 构建时路径会生效）
+      config.build_settings['HEADER_SEARCH_PATHS'] = '$(inherited) "${PODS_ROOT}/../Flutter/Flutter.framework/Headers"'
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = '$(inherited) "${PODS_ROOT}/../Flutter"'
     end
   end
 end

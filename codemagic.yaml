@@ -3,26 +3,50 @@
 workflows:
   ios-build:
     name: 蓝图极智 iOS Build
-    max_build_duration: 45
+    max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Install dependencies
+      - name: Clean and install dependencies
         script: |
           cd App源码/ai_stock_picker
+          # 完全清理，确保没有旧的 Pods 缓存
+          flutter clean
+          rm -rf ios/Pods ios/Podfile.lock
           flutter pub get
       - name: Build iOS
         script: |
           cd App源码/ai_stock_picker
+          # 关键：导出环境变量禁用代码签名
+          export CODE_SIGNING_ALLOWED=NO
+          export CODE_SIGNING_REQUIRED=NO
+          export CODE_SIGN_IDENTITY=""
+          export AD_HOC_CODE_SIGNING_ALLOWED=NO
+
+          # 输出调试信息
+          echo "=== Code Signing Settings ==="
+          echo "CODE_SIGNING_ALLOWED=$CODE_SIGNING_ALLOWED"
+          echo "CODE_SIGNING_REQUIRED=$CODE_SIGNING_REQUIRED"
+          echo "Flutter version: $(flutter --version | head -1)"
+
+          # 构建
           flutter build ios --release --no-codesign
       - name: Create IPA
         script: |
           cd App源码/ai_stock_picker
+          echo "=== Looking for Runner.app ==="
+          find build/ios -name "Runner.app" -type d
           RUNNER_APP=$(find build/ios -name "Runner.app" -type d | head -1)
+          if [ -z "$RUNNER_APP" ]; then
+            echo "ERROR: Runner.app not found!"
+            exit 1
+          fi
+          echo "Found app at: $RUNNER_APP"
           mkdir -p Payload
           cp -R "$RUNNER_APP" Payload/
           zip -qr 蓝图极智-v2.0.2.ipa Payload/
+          echo "IPA created successfully!"
     artifacts:
       - App源码/ai_stock_picker/蓝图极智-v2.0.2.ipa
