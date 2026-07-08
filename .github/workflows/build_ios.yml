@@ -27,7 +27,13 @@ jobs:
 
       - name: Build iOS Release (no codesign)
         working-directory: App源码/ai_stock_picker
-        run: flutter build ios --release --no-codesign
+        run: |
+          # 修复 Xcode 15+：链接 Flutter.framework 到 Pods 目录
+          mkdir -p ios/Pods
+          if [ -d ios/Flutter/Flutter.framework ] && [ ! -e ios/Pods/Flutter.framework ]; then
+            ln -sf ../Flutter/Flutter.framework ios/Pods/Flutter.framework
+          fi
+          flutter build ios --release --no-codesign
 
       - name: Locate Runner.app
         id: find_app
