@@ -1,5 +1,12 @@
 platform :ios, '13.0'
 
+# Ruby 3.4+ 兼容：File.exists? 已被移除，但 Flutter 3.0.0 的 podhelper 还在用
+unless File.respond_to?(:exists?)
+  class << File
+    alias_method :exists?, :exist?
+  end
+end
+
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
