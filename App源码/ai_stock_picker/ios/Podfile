@@ -32,53 +32,24 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-# pre_install: 在所有 Pod 安装前设置 Swift 版本，修复 workmanager 等插件的 Swift 版本检测
+# pre_install: 跳过 Swift 版本校验（新版 CocoaPods 对 workmanager 等插件兼容问题）
 pre_install do |installer|
   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_swift_pods_swift_version) {}
 end
 
 target 'Runner' do
   use_frameworks!
-  # 不启用 modular_headers，否则 Flutter/Flutter.h 找不到（module map 问题）
   # use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
-  # arm64 macOS runner 兼容：Flutter.framework 找不到的问题
-  flutter_dir = File.join(File.dirname(File.realpath(__FILE__)), 'Flutter')
-  pods_dir = File.join(File.dirname(File.realpath(__FILE__)), 'Pods')
-  
-  # 创建 Flutter.framework 软链接到 Pods 目录
-  flutter_framework_src = File.join(flutter_dir, 'Flutter.framework')
-  flutter_framework_dst = File.join(pods_dir, 'Flutter.framework')
-  unless File.exist?(flutter_framework_dst)
-    FileUtils.ln_sf(flutter_framework_src, flutter_framework_dst) rescue nil
-  end
-  
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
       config.build_settings['SWIFT_VERSION'] = '5.0'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-      
-      # FRAMEWORK_SEARCH_PATHS
-      fsp = config.build_settings['FRAMEWORK_SEARCH_PATHS']
-      fsp = fsp.is_a?(Array) ? fsp : ['$(inherited)']
-      fsp += [flutter_dir, pods_dir, '${PODS_ROOT}', '${PODS_ROOT}/../Flutter']
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = fsp.uniq
-      
-      # HEADER_SEARCH_PATHS
-      hsp = config.build_settings['HEADER_SEARCH_PATHS']
-      hsp = hsp.is_a?(Array) ? hsp : ['$(inherited)']
-      hsp += ["#{flutter_dir}/Flutter.framework/Headers", '${PODS_ROOT}/../Flutter/Flutter.framework/Headers']
-      config.build_settings['HEADER_SEARCH_PATHS'] = hsp.uniq
-      
-      # 关闭 Clang 依赖扫描加速（兼容新版 Xcode）
-      config.build_settings['CLANG_ENABLE_MODULE_DEPENDENCY_SCANNING'] = 'NO'
-      # 让 Xcode 不要只编译活跃架构
-      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
     end
   end
 end

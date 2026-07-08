@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_ios:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout
@@ -35,12 +35,12 @@ jobs:
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           if [ -z "$RUNNER" ]; then
-            echo "⚠️  Release 失败，尝试 Debug 模式..."
+            echo "Release 失败，尝试 Debug 模式..."
             flutter build ios --debug --no-codesign
             RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           fi
           echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
-          echo "✅ Runner.app: $RUNNER"
+          echo "Runner.app: $RUNNER"
 
       - name: Package IPA
         working-directory: App源码/ai_stock_picker
@@ -49,7 +49,7 @@ jobs:
           cp -R "${{ steps.find_app.outputs.runner_path }}" build/ios/ipa/Payload/
           cd build/ios/ipa
           zip -qr "../../蓝图极智-v2.0.2.ipa" Payload/
-          echo "✅ IPA: build/ios/蓝图极智-v2.0.2.ipa"
+          echo "IPA: build/ios/蓝图极智-v2.0.2.ipa"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
