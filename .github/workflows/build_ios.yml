@@ -13,14 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode 14
-        run: |
-          ls /Applications/Xcode*.app/Contents/Developer 2>/dev/null | head -5
-          XCODE_14=$(ls /Applications/Xcode_14*.app 2>/dev/null || ls /Applications/Xcode-14*.app 2>/dev/null || echo "")
-          if [ -n "$XCODE_14" ]; then
-            sudo xcode-select -s "$XCODE_14/Contents/Developer"
-          fi
-          xcodebuild -version
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.3'
+
+      - name: Xcode version
+        run: xcodebuild -version
 
       - name: Setup Flutter 3.0.0
         uses: subosito/flutter-action@v2
@@ -36,17 +34,13 @@ jobs:
 
       - name: Build iOS Release (no codesign)
         working-directory: App源码/ai_stock_picker
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign || flutter build ios --debug --no-codesign
 
       - name: Locate Runner.app
         id: find_app
         working-directory: App源码/ai_stock_picker
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
-          if [ -z "$RUNNER" ]; then
-            flutter build ios --debug --no-codesign
-            RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
-          fi
           echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
 
       - name: Package IPA
