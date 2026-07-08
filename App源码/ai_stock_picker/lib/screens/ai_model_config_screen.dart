@@ -328,7 +328,7 @@ class _AIModelConfigScreenState extends State<AIModelConfigScreen> {
                 await AIModelService.deleteModel(model.id);
                 _loadData();
               },
-              style: ElevatedButton.styleFrom(primary: colors.error),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.error),
               child: Text('删除', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -592,7 +592,7 @@ class _AIModelConfigScreenState extends State<AIModelConfigScreen> {
                   SnackBar(content: Text('${preset.name} 添加成功！')),
                 );
               },
-              style: ElevatedButton.styleFrom(primary: colors.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
               child: Text('添加', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -676,7 +676,7 @@ class _AIModelConfigScreenState extends State<AIModelConfigScreen> {
                 Navigator.pop(ctx);
                 _loadData();
               },
-              style: ElevatedButton.styleFrom(primary: colors.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
               child: Text('保存', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],

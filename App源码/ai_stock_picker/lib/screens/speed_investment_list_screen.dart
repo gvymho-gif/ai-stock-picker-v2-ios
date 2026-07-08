@@ -339,7 +339,7 @@ class _SpeedInvestmentListScreenState extends State<SpeedInvestmentListScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text('取消', style: AppText.body2.copyWith(color: colors.textSecondary))),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            style: ElevatedButton.styleFrom(primary: colors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
             child: const Text('确认导入', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -392,7 +392,7 @@ class _SpeedInvestmentListScreenState extends State<SpeedInvestmentListScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('取消', style: AppText.body2.copyWith(color: AppColors.of(context).textSecondary))),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(primary: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('删除', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -425,7 +425,7 @@ class _SpeedInvestmentListScreenState extends State<SpeedInvestmentListScreen> {
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text('取消', style: AppText.body2.copyWith(color: c.textSecondary))),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(primary: c.hotInvestAccent),
+          style: ElevatedButton.styleFrom(backgroundColor: c.hotInvestAccent),
           child: const Text('确认', style: TextStyle(color: Colors.white)),
         ),
       ],

@@ -447,7 +447,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(primary: colors.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
               child: Text('确定', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -495,7 +495,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(primary: colors.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
               child: Text('确定', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -529,7 +529,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   _loadData();
                 }
               },
-              style: ElevatedButton.styleFrom(primary: colors.error),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.error),
               child: Text('删除', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -560,7 +560,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   _loadData();
                 }
               },
-              style: ElevatedButton.styleFrom(primary: colors.error),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.error),
               child: Text('移除', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],

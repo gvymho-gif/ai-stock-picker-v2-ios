@@ -106,7 +106,7 @@ class _LiteInvestmentDetailScreenState extends State<LiteInvestmentDetailScreen>
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(primary: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('确认结算', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -146,7 +146,7 @@ class _LiteInvestmentDetailScreenState extends State<LiteInvestmentDetailScreen>
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(primary: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('确认删除', style: TextStyle(color: Colors.white)),
           ),
         ],

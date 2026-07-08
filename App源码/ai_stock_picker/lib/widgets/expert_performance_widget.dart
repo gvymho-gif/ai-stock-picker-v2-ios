@@ -1672,7 +1672,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
-            style: ElevatedButton.styleFrom(primary: colors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
             child: const Text('确认导入', style: TextStyle(color: Colors.white)),
           ),
         ],

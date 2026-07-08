@@ -636,7 +636,7 @@ class _HomeScreenState extends State<HomeScreen>
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(primary: colors.primary),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
               child: Text('创建分类', style: AppText.body2.copyWith(color: Colors.white)),
             ),
           ],
@@ -754,7 +754,7 @@ class _HomeScreenState extends State<HomeScreen>
                     }
                   }
                 },
-                style: ElevatedButton.styleFrom(primary: colors.primary),
+                style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
                 child: Text('确定', style: AppText.body2.copyWith(color: Colors.white)),
               ),
             ],
@@ -793,7 +793,7 @@ class _HomeScreenState extends State<HomeScreen>
               final name = controller.text.trim();
               if (name.isNotEmpty) Navigator.pop(ctx, name);
             },
-            style: ElevatedButton.styleFrom(primary: colors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
             child: Text('确定', style: AppText.body2.copyWith(color: Colors.white)),
           ),
         ],
@@ -1725,7 +1725,7 @@ class _HomeScreenState extends State<HomeScreen>
               onPressed: _search,
               icon: const Icon(Icons.refresh, size: 18),
               label: const Text('重新搜索'),
-              style: ElevatedButton.styleFrom(primary: Colors.transparent, elevation: 0,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full))),
             ),
