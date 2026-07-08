@@ -833,7 +833,7 @@ class _AIQAScreenState extends State<AIQAScreen> with TickerProviderStateMixin {
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); setState(() => _messages.clear()); },
             style: ElevatedButton.styleFrom(
-              primary: colors.error,
+              backgroundColor: colors.error,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('清空', style: TextStyle(color: Colors.white)),
@@ -874,7 +874,7 @@ class _AIQAScreenState extends State<AIQAScreen> with TickerProviderStateMixin {
             icon: const Icon(Icons.copy, size: 16),
             label: Text('复制报告', style: const TextStyle(color: Colors.white, fontSize: 14)),
             style: ElevatedButton.styleFrom(
-              primary: colors.primary, padding: const EdgeInsets.symmetric(vertical: 12),
+              backgroundColor: colors.primary, padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           )),

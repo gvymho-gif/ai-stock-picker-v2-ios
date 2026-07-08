@@ -4285,7 +4285,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
               icon: const Icon(Icons.add),
               label: const Text('添加股票'),
               style: ElevatedButton.styleFrom(
-                primary: colors.primary,
+                backgroundColor: colors.primary,
                 onPrimary: Colors.white,
               ),
             ),
@@ -4296,7 +4296,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
           ElevatedButton(
             onPressed: _saveRecord,
             style: ElevatedButton.styleFrom(
-              primary: colors.primary,
+              backgroundColor: colors.primary,
               onPrimary: Colors.white,
               minimumSize: const Size(double.infinity, 48),
             ),

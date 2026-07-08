@@ -470,7 +470,7 @@ class _HotInvestmentListScreenState extends State<HotInvestmentListScreen> {
             icon: const Icon(Icons.rocket_launch, size: 18),
             label: const Text('去热点追踪'),
             style: ElevatedButton.styleFrom(
-              primary: colors.hotInvestAccent,
+              backgroundColor: colors.hotInvestAccent,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),

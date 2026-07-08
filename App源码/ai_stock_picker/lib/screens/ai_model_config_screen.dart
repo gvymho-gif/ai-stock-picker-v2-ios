@@ -119,7 +119,7 @@ class _AIModelConfigScreenState extends State<AIModelConfigScreen> {
             icon: const Icon(Icons.add, size: 18),
             label: Text('添加模型', style: AppText.body2.copyWith(color: Colors.white)),
             style: ElevatedButton.styleFrom(
-              primary: colors.primary,
+              backgroundColor: colors.primary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),

@@ -159,7 +159,7 @@ class _StockAnalysisScreenState extends State<StockAnalysisScreen> {
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('重新获取'),
                 style: ElevatedButton.styleFrom(
-                  primary: colors.primary,
+                  backgroundColor: colors.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
                 ),
               ),

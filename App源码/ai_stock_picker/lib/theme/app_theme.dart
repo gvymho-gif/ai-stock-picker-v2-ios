@@ -74,8 +74,8 @@ class AppTheme {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        primary: AppColors.primary,
-        onPrimary: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.xl,
@@ -90,7 +90,7 @@ class AppTheme {
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        primary: AppColors.primary,
+        foregroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.sm,
@@ -203,8 +203,8 @@ class AppTheme {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        primary: AppColors.primary,
-        onPrimary: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.xl,
@@ -219,7 +219,7 @@ class AppTheme {
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        primary: AppColors.primary,
+        foregroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.sm,

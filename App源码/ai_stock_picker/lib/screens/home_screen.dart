@@ -485,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen>
                         icon: Icon(Icons.add, size: 18),
                         label: Text('添加模型', style: AppText.body2.copyWith(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
-                          primary: colors.primary,
+                          backgroundColor: colors.primary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),

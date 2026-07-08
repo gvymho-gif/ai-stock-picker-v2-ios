@@ -511,7 +511,7 @@ class _SpeedInvestmentListScreenState extends State<SpeedInvestmentListScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _activating ? null : _manualActivate,
                             style: ElevatedButton.styleFrom(
-                              primary: colors.speedInvestAccent,
+                              backgroundColor: colors.speedInvestAccent,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                             ),

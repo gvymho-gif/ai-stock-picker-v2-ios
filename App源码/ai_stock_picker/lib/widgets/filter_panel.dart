@@ -331,7 +331,7 @@ class _FilterPanelState extends State<FilterPanel> {
             child: ElevatedButton(
               onPressed: _applyFilters,
               style: ElevatedButton.styleFrom(
-                primary: Colors.transparent, elevation: 0,
+                backgroundColor: Colors.transparent, elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
               ),

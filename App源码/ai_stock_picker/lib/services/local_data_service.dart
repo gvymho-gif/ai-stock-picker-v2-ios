@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'yahoo_finance_service.dart';
 import '../models/investment_calendar.dart';
+import 'gbk_decoder.dart';
 
 class LocalDataService {
   static const int _timeoutSeconds = 15;
@@ -2441,38 +2442,7 @@ class LocalDataService {
         if (result != null && result.isNotEmpty) return result;
       }
     } catch (_) { _channelReady = false; }
-    return _fallbackDecodeGbk(bytes);
-  }
-
-  static String _fallbackDecodeGbk(List<int> bytes) {
-    if (bytes.isEmpty) return '';
-    final runes = <int>[];
-    int i = 0;
-    while (i < bytes.length) {
-      final b = bytes[i];
-      if (b < 0x80) { runes.add(b); i++; }
-      else if (b >= 0x81 && i + 1 < bytes.length) {
-        runes.add(_gbkCharToUnicode(b, bytes[i + 1]));
-        i += 2;
-      } else { runes.add(0xFFFD); i++; }
-    }
-    return String.fromCharCodes(runes);
-  }
-
-  static int _gbkCharToUnicode(int hi, int lo) {
-    if (hi >= 0xB8 && hi <= 0xD7 && lo >= 0xA1 && lo <= 0xFE)
-      return 0x4E00 + ((hi - 0xB8) * 94 + (lo - 0xA1));
-    if (hi >= 0xD8 && hi <= 0xF7 && lo >= 0xA1 && lo <= 0xFE) {
-      final offset = (hi - 0xD8) * 94 + (lo - 0xA1);
-      return offset < 1200 ? 0x3400 + offset : 0xE000 + offset;
-    }
-    if (hi == 0xA3 && lo >= 0xA1 && lo <= 0xFE) return 0xFF10 + (lo - 0xA1);
-    if (hi == 0xA1 && lo == 0xA1) return 0x3000;
-    if (hi >= 0x81 && hi <= 0xFE && lo >= 0x40 && lo <= 0xFE) {
-      final idx = ((hi - 0x81) << 7 | ((lo >> 3) & 0x1F)) & 0xFFFF;
-      return (idx % (0x9FFF - 0x4E00 + 1)) + 0x4E00;
-    }
-    return 0xFFFD;
+    return GbkDecoder.decode(bytes);
   }
 
   // ============================================================

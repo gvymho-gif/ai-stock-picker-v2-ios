@@ -769,7 +769,7 @@ class _HotTrackScreenState extends State<HotTrackScreen> {
                 label: Text('热点·¥30K',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  primary: colors.hotInvestAccent,
+                  backgroundColor: colors.hotInvestAccent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
                   shadowColor: colors.hotInvestAccent.withOpacity(0.4),
@@ -788,7 +788,7 @@ class _HotTrackScreenState extends State<HotTrackScreen> {
                 label: Text('轻量·¥3.3K',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  primary: colors.liteInvestAccent,
+                  backgroundColor: colors.liteInvestAccent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
                   shadowColor: colors.liteInvestAccent.withOpacity(0.4),
@@ -887,7 +887,7 @@ class _HotTrackScreenState extends State<HotTrackScreen> {
               icon: const Icon(Icons.check, size: 18),
               label: const Text('确认买入'),
               style: ElevatedButton.styleFrom(
-                primary: isLite ? c.liteInvestAccent : c.hotInvestAccent,
+                backgroundColor: isLite ? c.liteInvestAccent : c.hotInvestAccent,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),

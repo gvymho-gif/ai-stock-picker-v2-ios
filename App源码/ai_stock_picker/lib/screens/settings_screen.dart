@@ -764,7 +764,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: ElevatedButton(
         onPressed: isLoading || isDisabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          primary: colors.primary.withOpacity(0.1),
+          backgroundColor: colors.primary.withOpacity(0.1),
           onPrimary: colors.primary,
           elevation: 0,
           shape: RoundedRectangleBorder(
