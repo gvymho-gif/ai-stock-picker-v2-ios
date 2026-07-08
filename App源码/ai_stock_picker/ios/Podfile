@@ -32,6 +32,11 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
+# pre_install: 在所有 Pod 安装前设置 Swift 版本，修复 workmanager 等插件的 Swift 版本检测
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_swift_pods_swift_version) {}
+end
+
 target 'Runner' do
   use_frameworks!
   # 不启用 modular_headers，否则 Flutter/Flutter.h 找不到（module map 问题）
