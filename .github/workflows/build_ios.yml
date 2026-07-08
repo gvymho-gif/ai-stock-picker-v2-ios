@@ -1,0 +1,54 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build_ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter 3.0.0
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Build iOS Release (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Locate Runner.app
+        id: find_app
+        run: |
+          RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
+          if [ -z "$RUNNER" ]; then
+            echo "⚠️  Release 失败，尝试 Debug 模式..."
+            flutter build ios --debug --no-codesign
+            RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
+          fi
+          echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
+          echo "✅ Runner.app: $RUNNER"
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/ios/ipa/Payload
+          cp -R "${{ steps.find_app.outputs.runner_path }}" build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -qr "../../蓝图极智-v2.0.2.ipa" Payload/
+          echo "✅ IPA: build/ios/蓝图极智-v2.0.2.ipa"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: 蓝图极智-v2.0.2
+          path: build/ios/蓝图极智-v2.0.2.ipa
