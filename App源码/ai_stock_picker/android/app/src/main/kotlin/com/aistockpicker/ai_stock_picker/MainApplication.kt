@@ -1,12 +1,8 @@
 package com.aistockpicker.ai_stock_picker
 
 import io.flutter.app.FlutterApplication
-import androidx.work.Configuration
 
-class MainApplication : FlutterApplication(), Configuration.Provider {
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
-            .setMinimumLoggingLevel(android.util.Log.INFO)
-            .build()
-    }
+class MainApplication : FlutterApplication() {
+    // 已移除 workmanager Configuration.Provider
+    // 如需 Android 后台任务，请改用 flutter_background_service
 }

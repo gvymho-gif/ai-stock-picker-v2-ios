@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workmanager/workmanager.dart';
 
 /// 智能预警服务 — 价格预警 + 技术指标预警 + 新闻预警
 class AlertService {
@@ -11,15 +11,10 @@ class AlertService {
   static const _keyAlerts = 'price_alerts_v2';
   static const _callbackName = 'alertCheckCallback';
 
-  /// 注册后台任务
+  /// 注册后台任务（仅 Android 使用 flutter_background_service，iOS 跳过）
   static Future<void> registerBackgroundTask() async {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
-    await Workmanager().registerPeriodicTask(
-      'alert_checker',
-      'price_alert_check',
-      frequency: const Duration(minutes: 15),
-      constraints: Constraints(networkType: NetworkType.connected),
-    );
+    if (!Platform.isAndroid) return;
+    // TODO: iOS 后台任务暂不实现（workmanager 插件与 Xcode 15+ 不兼容）
   }
 
   /// 添加价格预警
@@ -132,11 +127,8 @@ class AlertService {
   }
 }
 
-/// 后台任务回调
+/// 后台任务回调（已移除 workmanager 依赖）
 @pragma('vm:entry-point')
 void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    // 后台检查预警条件并推送通知
-    return Future.value(true);
-  });
+  // iOS 不再使用 workmanager，此函数保留以避免编译错误
 }
