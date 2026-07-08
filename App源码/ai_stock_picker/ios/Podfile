@@ -31,6 +31,11 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
+# 绕过 workmanager 等老插件的 Swift 版本校验（新版 CocoaPods/Xcode 兼容）
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_swift_pods_swift_version) {}
+end
+
 target 'Runner' do
   use_frameworks! :linkage => :static
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
