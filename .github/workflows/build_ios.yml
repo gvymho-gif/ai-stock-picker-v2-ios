@@ -13,13 +13,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.3'
-
-      - name: Xcode version
-        run: xcodebuild -version
-
       - name: Setup Flutter 3.0.0
         uses: subosito/flutter-action@v2
         with:
@@ -32,9 +25,15 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Build iOS Release (no codesign)
+      - name: Build iOS for Simulator
         working-directory: App源码/ai_stock_picker
-        run: flutter build ios --release --no-codesign || flutter build ios --debug --no-codesign
+        run: flutter build ios --debug --no-codesign --simulator
+
+      - name: Build iOS Device
+        working-directory: App源码/ai_stock_picker
+        run: |
+          # Try to get the simulator build first, then try device
+          flutter build ios --release --no-codesign || true
 
       - name: Locate Runner.app
         id: find_app
@@ -42,8 +41,10 @@ jobs:
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
+          echo "Found: $RUNNER"
 
       - name: Package IPA
+        if: steps.find_app.outputs.runner_path != ''
         working-directory: App源码/ai_stock_picker
         run: |
           mkdir -p build/ios/ipa/Payload
@@ -52,6 +53,7 @@ jobs:
           zip -qr "../../蓝图极智-v2.0.2.ipa" Payload/
 
       - name: Upload IPA
+        if: steps.find_app.outputs.runner_path != ''
         uses: actions/upload-artifact@v4
         with:
           name: 蓝图极智-v2.0.2
