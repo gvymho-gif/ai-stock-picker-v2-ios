@@ -312,7 +312,7 @@ class _FilterPanelState extends State<FilterPanel> {
           child: OutlinedButton(
             onPressed: _resetFilters,
             style: OutlinedButton.styleFrom(
-              primary: colors.textSecondary, side: BorderSide(color: colors.border),
+              foregroundColor: colors.textSecondary, side: BorderSide(color: colors.border),
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
             ),
