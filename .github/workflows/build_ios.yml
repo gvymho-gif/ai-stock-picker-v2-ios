@@ -7,11 +7,19 @@ on:
 
 jobs:
   build_ios:
-    runs-on: macos-12
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Xcode 14.3.1
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '14.3.1'
+
+      - name: Xcode version
+        run: xcodebuild -version
 
       - name: Setup Flutter 3.0.0
         uses: subosito/flutter-action@v2
@@ -25,15 +33,9 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Build iOS for Simulator
+      - name: Build iOS
         working-directory: App源码/ai_stock_picker
-        run: flutter build ios --debug --no-codesign --simulator
-
-      - name: Build iOS Device
-        working-directory: App源码/ai_stock_picker
-        run: |
-          # Try to get the simulator build first, then try device
-          flutter build ios --release --no-codesign || true
+        run: flutter build ios --release --no-codesign
 
       - name: Locate Runner.app
         id: find_app
@@ -41,7 +43,6 @@ jobs:
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
-          echo "Found: $RUNNER"
 
       - name: Package IPA
         if: steps.find_app.outputs.runner_path != ''
