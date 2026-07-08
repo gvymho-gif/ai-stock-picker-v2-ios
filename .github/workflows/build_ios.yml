@@ -7,11 +7,20 @@ on:
 
 jobs:
   build_ios:
-    runs-on: macos-13
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select Xcode 14
+        run: |
+          ls /Applications/Xcode*.app/Contents/Developer 2>/dev/null | head -5
+          XCODE_14=$(ls /Applications/Xcode_14*.app 2>/dev/null || ls /Applications/Xcode-14*.app 2>/dev/null || echo "")
+          if [ -n "$XCODE_14" ]; then
+            sudo xcode-select -s "$XCODE_14/Contents/Developer"
+          fi
+          xcodebuild -version
 
       - name: Setup Flutter 3.0.0
         uses: subosito/flutter-action@v2
@@ -27,13 +36,7 @@ jobs:
 
       - name: Build iOS Release (no codesign)
         working-directory: App源码/ai_stock_picker
-        run: |
-          # 修复 Xcode 15+：链接 Flutter.framework 到 Pods 目录
-          mkdir -p ios/Pods
-          if [ -d ios/Flutter/Flutter.framework ] && [ ! -e ios/Pods/Flutter.framework ]; then
-            ln -sf ../Flutter/Flutter.framework ios/Pods/Flutter.framework
-          fi
-          flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign
 
       - name: Locate Runner.app
         id: find_app
@@ -41,12 +44,10 @@ jobs:
         run: |
           RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           if [ -z "$RUNNER" ]; then
-            echo "Release failed, trying Debug..."
             flutter build ios --debug --no-codesign
             RUNNER=$(find build/ios -name "Runner.app" -type d | head -1)
           fi
           echo "runner_path=$RUNNER" >> $GITHUB_OUTPUT
-          echo "Runner.app: $RUNNER"
 
       - name: Package IPA
         working-directory: App源码/ai_stock_picker
@@ -55,7 +56,6 @@ jobs:
           cp -R "${{ steps.find_app.outputs.runner_path }}" build/ios/ipa/Payload/
           cd build/ios/ipa
           zip -qr "../../蓝图极智-v2.0.2.ipa" Payload/
-          echo "IPA: build/ios/蓝图极智-v2.0.2.ipa"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
