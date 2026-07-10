@@ -3377,7 +3377,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
             spots: spots,
             isCurved: true,
             curveSmoothness: 0.3,
-            color: const Color(0xFFE05555).withOpacity(0.9),
+            gradient: LinearGradient(colors: [ const Color(0xFFE05555).withOpacity(0.9),  const Color(0xFFE05555).withOpacity(0.9)]),
             barWidth: 2.0,
             dotData: FlDotData(
               show: true,
@@ -3388,7 +3388,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
                   : const Color(0xFF52C87A); // 翠绿（下跌点）
                 return FlDotCirclePainter(
                   radius: 3.5,
-                  color: baseColor,
+                  gradient: LinearGradient(colors: [ baseColor,  baseColor]),
                   strokeWidth: 1.5,
                   strokeColor: const Color(0x80FFFFFF),  // ★ 白色亮边
                 );
@@ -3396,7 +3396,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
             ),
             belowBarData: BarAreaData(
               show: true,
-              color: const Color(0xFFE05555).withOpacity(0.05),
+              gradient: LinearGradient(colors: [ const Color(0xFFE05555).withOpacity(0.05),  const Color(0xFFE05555).withOpacity(0.05)]),
             ),
             aboveBarData: BarAreaData(show: false),
           ),
@@ -3448,7 +3448,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
         spots: [spots[i], spots[i + 1]],
         isCurved: true,
         curveSmoothness: 0.3,
-        color: Colors.transparent,
+        gradient: LinearGradient(colors: [ Colors.transparent,  Colors.transparent]),
         barWidth: 0,
         dotData: FlDotData(show: false),
         belowBarData: BarAreaData(
@@ -3473,7 +3473,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
         spots: [spots[i], spots[i + 1]],
         isCurved: true,
         curveSmoothness: 0.3,
-        color: color.withOpacity(0.18),
+        gradient: LinearGradient(colors: [ color.withOpacity(0.18),  color.withOpacity(0.18)]),
         barWidth: 6.0,
         dotData: FlDotData(show: false),
         belowBarData: BarAreaData(show: false),
@@ -3485,7 +3485,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
         spots: [spots[i], spots[i + 1]],
         isCurved: true,
         curveSmoothness: 0.3,
-        color: color.withOpacity(0.40),
+        gradient: LinearGradient(colors: [ color.withOpacity(0.40),  color.withOpacity(0.40)]),
         barWidth: 3.0,
         dotData: FlDotData(show: false),
         belowBarData: BarAreaData(show: false),
@@ -3497,7 +3497,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
         spots: [spots[i], spots[i + 1]],
         isCurved: true,
         curveSmoothness: 0.3,
-        color: color,
+        gradient: LinearGradient(colors: [ color,  color]),
         barWidth: 2.0,
         shadow: Shadow(
           color: color.withOpacity(0.5),
@@ -3514,7 +3514,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
     result.add(LineChartBarData(
       spots: spots,
       isCurved: false,
-      color: Colors.transparent,
+      gradient: LinearGradient(colors: [ Colors.transparent,  Colors.transparent]),
       barWidth: 0,
       dotData: FlDotData(
         show: true,
@@ -3523,7 +3523,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
           final isUp = idx < dailyChanges.length && dailyChanges[idx] >= 0;
           return FlDotCirclePainter(
             radius: 2.0,
-            color: isUp ? upColor : downColor,
+            gradient: LinearGradient(colors: [ isUp ? upColor : downColor,  isUp ? upColor : downColor]),
             strokeWidth: 1.2,
             strokeColor: Colors.white,
           );
@@ -3665,12 +3665,12 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
       allLineBars.add(LineChartBarData(
         spots: hs300Spots,
         isCurved: false,
-        color: const Color(0xFF3B82F6),
+        gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]),
         barWidth: 2.0,
         dotData: FlDotData(
           show: true,
           getDotPainter: (spot, percent, barData, index) =>
-              FlDotCirclePainter(radius: 2.5, color: const Color(0xFF3B82F6), strokeWidth: 0),
+              FlDotCirclePainter(radius: 2.5, gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]), strokeWidth: 0),
         ),
         belowBarData: BarAreaData(show: false),
       ));
@@ -3680,12 +3680,12 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
       allLineBars.add(LineChartBarData(
         spots: zz1000Spots,
         isCurved: false,
-        color: const Color(0xFFFF8C00),
+        gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]),
         barWidth: 2.0,
         dotData: FlDotData(
           show: true,
           getDotPainter: (spot, percent, barData, index) =>
-              FlDotCirclePainter(radius: 2.0, color: const Color(0xFFFF8C00), strokeWidth: 0),
+              FlDotCirclePainter(radius: 2.0, gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]), strokeWidth: 0),
         ),
         belowBarData: BarAreaData(show: false),
       ));
@@ -3868,7 +3868,7 @@ class _ExpertPerformanceWidgetState extends State<ExpertPerformanceWidget> with 
         x: i,
         barRods: [
           BarChartRodData(
-            toY: avgChange,
+            y: avgChange,
             color: isUp ? const Color(0xFFEF4444) : const Color(0xFF22C55E),
             width: recent.length > 15 ? 6 : 10,
             borderRadius: isUp
