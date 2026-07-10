@@ -14,14 +14,14 @@ workflows:
         script: |
           cd App源码/ai_stock_picker
           flutter clean
-          rm -rf ios/Pods ios/Podfile.lock ios/build ios/.symlinks
+          rm -rf ios/build ios/.symlinks
           rm -f pubspec.lock  # 强制重新解析依赖，避免旧版本锁定
           flutter pub get
 
       - name: Install CocoaPods dependencies
         script: |
           cd App源码/ai_stock_picker/ios
-          pod deintegrate || true  # 彻底清理旧 Pods 配置，避免 sandbox 不同步
+          rm -rf Pods
           pod install --repo-update
 
       - name: Build with xcodebuild (bypassing flutter build)
