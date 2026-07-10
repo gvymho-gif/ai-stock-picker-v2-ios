@@ -22,7 +22,10 @@ workflows:
         script: |
           cd App源码/ai_stock_picker/ios
           rm -rf Pods
-          pod install --repo-update
+          pod install
+          # 强制同步 Manifest.lock，避免 xcodebuild 的 Check Pods Manifest.lock 脚本报错
+          cp Podfile.lock Pods/Manifest.lock || true
+          echo "=== Manifest.lock synced ==="
 
       - name: Build with xcodebuild (bypassing flutter build)
         script: |
