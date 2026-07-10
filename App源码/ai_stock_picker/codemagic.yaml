@@ -21,6 +21,7 @@ workflows:
       - name: Install CocoaPods dependencies
         script: |
           cd App源码/ai_stock_picker/ios
+          pod deintegrate || true  # 彻底清理旧 Pods 配置，避免 sandbox 不同步
           pod install --repo-update
 
       - name: Build with xcodebuild (bypassing flutter build)
