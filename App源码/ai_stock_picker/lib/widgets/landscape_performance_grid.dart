@@ -783,12 +783,12 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
                                 LineChartBarData(
                                   spots: hs300Spots,
                                   isCurved: false,
-                                  gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]),
+                                  color: const Color(0xFF3B82F6),
                                   barWidth: 2.0,
                                   dotData: FlDotData(
                                     show: true,
                                     getDotPainter: (spot, percent, barData, index) =>
-                                        FlDotCirclePainter(radius: 2.0, gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]), strokeWidth: 0),
+                                        FlDotCirclePainter(radius: 2.0, color: const Color(0xFF3B82F6), strokeWidth: 0),
                                   ),
                                   belowBarData: BarAreaData(show: false),
                                 ),
@@ -796,12 +796,12 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
                                 LineChartBarData(
                                   spots: zz1000Spots,
                                   isCurved: false,
-                                  gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]),
+                                  color: const Color(0xFFFF8C00),
                                   barWidth: 2.0,
                                   dotData: FlDotData(
                                     show: true,
                                     getDotPainter: (spot, percent, barData, index) =>
-                                        FlDotCirclePainter(radius: 2.0, gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]), strokeWidth: 0),
+                                        FlDotCirclePainter(radius: 2.0, color: const Color(0xFFFF8C00), strokeWidth: 0),
                                   ),
                                   belowBarData: BarAreaData(show: false),
                                 ),
@@ -893,7 +893,7 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
         x: i,
         barRods: [
           BarChartRodData(
-            y: avgChange,
+            toY: avgChange,
             color: isUp ? const Color(0xFFEF4444) : const Color(0xFF22C55E),
             width: recent.length > 15 ? 10 : 14,
             borderRadius: isUp
@@ -1723,12 +1723,12 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
                               LineChartBarData(
                                 spots: hs300Spots,
                                 isCurved: false,
-                                gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]),
+                                color: const Color(0xFF3B82F6),
                                 barWidth: 2.0,
                                 dotData: FlDotData(
                                   show: true,
                                   getDotPainter: (spot, percent, barData, index) =>
-                                      FlDotCirclePainter(radius: 2.0, gradient: LinearGradient(colors: [ const Color(0xFF3B82F6),  const Color(0xFF3B82F6)]), strokeWidth: 0),
+                                      FlDotCirclePainter(radius: 2.0, color: const Color(0xFF3B82F6), strokeWidth: 0),
                                 ),
                                 belowBarData: BarAreaData(show: false),
                               ),
@@ -1736,12 +1736,12 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
                               LineChartBarData(
                                 spots: zz1000Spots,
                                 isCurved: false,
-                                gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]),
+                                color: const Color(0xFFFF8C00),
                                 barWidth: 2.0,
                                 dotData: FlDotData(
                                   show: true,
                                   getDotPainter: (spot, percent, barData, index) =>
-                                      FlDotCirclePainter(radius: 2.0, gradient: LinearGradient(colors: [ const Color(0xFFFF8C00),  const Color(0xFFFF8C00)]), strokeWidth: 0),
+                                      FlDotCirclePainter(radius: 2.0, color: const Color(0xFFFF8C00), strokeWidth: 0),
                                 ),
                                 belowBarData: BarAreaData(show: false),
                               ),
@@ -1802,7 +1802,7 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
       result.add(LineChartBarData(
         spots: [spots[i], spots[i + 1]],
         isCurved: true, curveSmoothness: 0.3,
-        gradient: LinearGradient(colors: [ Colors.transparent,  Colors.transparent]), barWidth: 0,
+        color: Colors.transparent, barWidth: 0,
         dotData: FlDotData(show: false),
         belowBarData: BarAreaData(
           show: true,
@@ -1817,19 +1817,19 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
       result.add(LineChartBarData(
         spots: [spots[i], spots[i + 1]],
         isCurved: true, curveSmoothness: 0.3,
-        gradient: LinearGradient(colors: [ color.withOpacity(0.18),  color.withOpacity(0.18)]), barWidth: 6.0,
+        color: color.withOpacity(0.18), barWidth: 6.0,
         dotData: FlDotData(show: false), belowBarData: BarAreaData(show: false),
       ));
       result.add(LineChartBarData(
         spots: [spots[i], spots[i + 1]],
         isCurved: true, curveSmoothness: 0.3,
-        gradient: LinearGradient(colors: [ color.withOpacity(0.40),  color.withOpacity(0.40)]), barWidth: 3.0,
+        color: color.withOpacity(0.40), barWidth: 3.0,
         dotData: FlDotData(show: false), belowBarData: BarAreaData(show: false),
       ));
       result.add(LineChartBarData(
         spots: [spots[i], spots[i + 1]],
         isCurved: true, curveSmoothness: 0.3,
-        gradient: LinearGradient(colors: [ color,  color]), barWidth: 2.0,
+        color: color, barWidth: 2.0,
         shadow: Shadow(color: color.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
         dotData: FlDotData(show: false), belowBarData: BarAreaData(show: false),
       ));
@@ -1837,7 +1837,7 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
 
     result.add(LineChartBarData(
       spots: spots, isCurved: false,
-      gradient: LinearGradient(colors: [ Colors.transparent,  Colors.transparent]), barWidth: 0,
+      color: Colors.transparent, barWidth: 0,
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, percent, barData, index) {
@@ -2106,7 +2106,7 @@ class _LandscapePerformanceGridState extends State<LandscapePerformanceGrid> wit
         x: i,
         barRods: [
           BarChartRodData(
-            y: avgChange,
+            toY: avgChange,
             color: isUp ? const Color(0xFFEF4444) : const Color(0xFF22C55E),
             width: recent.length > 15 ? 6 : 10,
             borderRadius: isUp

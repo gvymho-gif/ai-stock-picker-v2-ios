@@ -103,7 +103,7 @@ class AIChartBubble extends StatelessWidget {
             spots: List.generate(closes.length, (i) => FlSpot(i.toDouble(), closes[i])),
             isCurved: true,
             curveSmoothness: 0.2,
-            gradient: LinearGradient(colors: [ closes.last >= closes.first ? colors.up : colors.down,  closes.last >= closes.first ? colors.up : colors.down]),
+            color: closes.last >= closes.first ? colors.up : colors.down,
             barWidth: 2,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
@@ -131,7 +131,7 @@ class AIChartBubble extends StatelessWidget {
         barGroups.add(LineChartBarData(
           spots: List.generate(values.length, (i) => FlSpot(i.toDouble(), values[i])),
           isCurved: true,
-          gradient: LinearGradient(colors: [ colors_list[idx % colors_list.length],  colors_list[idx % colors_list.length]]),
+          color: colors_list[idx % colors_list.length],
           barWidth: 1.5,
           dotData: FlDotData(show: false),
           preventCurveOverShooting: true,
