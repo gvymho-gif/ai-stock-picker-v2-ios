@@ -15,6 +15,7 @@ workflows:
           cd App源码/ai_stock_picker
           flutter clean
           rm -rf ios/Pods ios/Podfile.lock ios/build ios/.symlinks
+          rm -f pubspec.lock  # 强制重新解析依赖，避免旧版本锁定
           flutter pub get
 
       - name: Install CocoaPods dependencies
