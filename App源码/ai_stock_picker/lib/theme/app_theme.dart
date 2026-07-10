@@ -36,7 +36,7 @@ class AppTheme {
 
     primaryColor: AppColors.primary,
 
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -164,7 +164,7 @@ class AppTheme {
 
     primaryColor: AppColors.primary,
 
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: const Color(0xFFFFFFFF),
       elevation: 2,
       shape: RoundedRectangleBorder(
